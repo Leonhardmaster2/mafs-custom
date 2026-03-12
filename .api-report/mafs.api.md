@@ -9,6 +9,31 @@ import { KatexOptions } from 'katex';
 import * as React_2 from 'react';
 
 // @public (undocumented)
+export function BoxPlot({ data, y, height, color, fillOpacity, weight, showLabels, labelSize, labelColor, labelPosition, showAxis, axisColor, }: BoxPlotProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace BoxPlot {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface BoxPlotProps {
+    axisColor?: string;
+    color?: string;
+    data: number[] | FiveNumberSummary;
+    fillOpacity?: number;
+    height?: number;
+    labelColor?: string;
+    labelPosition?: "below" | "above";
+    labelSize?: number;
+    showAxis?: boolean;
+    showLabels?: boolean;
+    weight?: number;
+    y?: number;
+}
+
+// @public (undocumented)
 export type CardinalDirection = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
 
 // @public (undocumented)
@@ -81,6 +106,20 @@ export interface Filled {
 }
 
 // @public (undocumented)
+export interface FiveNumberSummary {
+    // (undocumented)
+    max: number;
+    // (undocumented)
+    median: number;
+    // (undocumented)
+    min: number;
+    // (undocumented)
+    q1: number;
+    // (undocumented)
+    q3: number;
+}
+
+// @public (undocumented)
 function Image_2({ href, x, y, width, height, anchor, preserveAspectRatio, svgImageProps, }: ImageProps): JSX_2.Element;
 export { Image_2 as Image }
 
@@ -150,6 +189,15 @@ export type MafsProps = React_2.PropsWithChildren<{
     ssr?: boolean;
     debug?: boolean;
 }>;
+
+// @public
+export interface MarbleState {
+    active: boolean;
+    color: string;
+    path: number[];
+    position: vec.Vector2;
+    radius: number;
+}
 
 // @public (undocumented)
 export function MovablePoint({ point, onMove, constrain, color, }: MovablePointProps): JSX_2.Element;
@@ -291,12 +339,77 @@ export interface PolylineProps extends PolyBaseProps {
     svgPolylineProps?: React_2.SVGProps<SVGPolylineElement>;
 }
 
+// @public
+export interface ProbabilityBranch {
+    children?: ProbabilityBranch[];
+    color?: string;
+    label: string;
+    probability: string | number;
+}
+
+// @public (undocumented)
+export interface ProbabilityMarbleControls {
+    isPlaying: boolean;
+    marble: MarbleState | null;
+    play: () => void;
+    reset: () => void;
+    resultPath: string[];
+}
+
+// @public (undocumented)
+export function ProbabilityTree({ data, x, y, hSpacing, vSpacing, nodeRadius, branchColor, labelColor, labelSize, showRoot, marble, }: ProbabilityTreeProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace ProbabilityTree {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface ProbabilityTreeProps {
+    branchColor?: string;
+    data: ProbabilityBranch[];
+    hSpacing?: number;
+    labelColor?: string;
+    labelSize?: number;
+    marble?: MarbleState | null;
+    nodeRadius?: number;
+    showRoot?: boolean;
+    vSpacing?: number;
+    x?: number;
+    y?: number;
+}
+
 // @public (undocumented)
 export interface SegmentProps extends Stroked {
     // (undocumented)
     point1: vec.Vector2;
     // (undocumented)
     point2: vec.Vector2;
+}
+
+// @public (undocumented)
+export function StemAndLeaf({ data, x, y, stemColor, leafColor, fontSize, charWidth, rowHeight, showKey, keyOffset, separatorColor, }: StemAndLeafProps): JSX_2.Element | null;
+
+// @public (undocumented)
+export namespace StemAndLeaf {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface StemAndLeafProps {
+    charWidth?: number;
+    data: number[];
+    fontSize?: number;
+    keyOffset?: vec.Vector2;
+    leafColor?: string;
+    rowHeight?: number;
+    separatorColor?: string;
+    showKey?: boolean;
+    stemColor?: string;
+    x?: number;
+    y?: number;
 }
 
 // @public (undocumented)
@@ -436,6 +549,21 @@ export interface UseMovablePointArguments {
 // @public (undocumented)
 export function usePaneContext(): PaneContextShape;
 
+// @public
+export function useProbabilityMarble({ data, x, y, hSpacing, vSpacing, speed, color, radius, }: UseProbabilityMarbleArgs): ProbabilityMarbleControls;
+
+// @public
+export interface UseProbabilityMarbleArgs {
+    color?: string;
+    data: ProbabilityBranch[];
+    hSpacing?: number;
+    radius?: number;
+    speed?: number;
+    vSpacing?: number;
+    x?: number;
+    y?: number;
+}
+
 // @public (undocumented)
 export function useStopwatch(options?: StopwatchArguments): Stopwatch;
 
@@ -511,6 +639,45 @@ export interface VectorProps extends Stroked {
     tail?: vec.Vector2;
     // (undocumented)
     tip: vec.Vector2;
+}
+
+// @public (undocumented)
+export function VennDiagram({ sets, intersections, center, radius, colors, fillOpacity, labelSize, labelColor, showUniversal, universalLabel, complementValue, highlightedRegion, onRegionClick, highlightOpacity, }: VennDiagramProps): JSX_2.Element | null;
+
+// @public (undocumented)
+export namespace VennDiagram {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface VennDiagramProps {
+    center?: vec.Vector2;
+    colors?: string[];
+    complementValue?: number | string;
+    fillOpacity?: number;
+    highlightedRegion?: string | null;
+    highlightOpacity?: number;
+    intersections?: VennIntersection[];
+    labelColor?: string;
+    labelSize?: number;
+    onRegionClick?: (regionKey: string | null) => void;
+    radius?: number;
+    sets: VennSet[];
+    showUniversal?: boolean;
+    universalLabel?: string;
+}
+
+// @public (undocumented)
+export interface VennIntersection {
+    sets: number[];
+    value: number | string;
+}
+
+// @public (undocumented)
+export interface VennSet {
+    exclusive?: number;
+    label: string;
 }
 
 // Warnings were encountered during analysis:

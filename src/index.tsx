@@ -74,3 +74,26 @@ export { usePaneContext } from "./context/PaneContext"
 export { Debug } from "./debug"
 
 export { LaTeX } from "./display/LaTeX"
+
+// Statistics & Probability components (Austrian Matura / SAT)
+export { ProbabilityTree, useProbabilityMarble } from "./display/statistics/ProbabilityTree"
+export type {
+  ProbabilityTreeProps,
+  ProbabilityBranch,
+  MarbleState,
+  UseProbabilityMarbleArgs,
+  ProbabilityMarbleControls,
+} from "./display/statistics/ProbabilityTree"
+
+export { VennDiagram } from "./display/statistics/VennDiagram"
+export type {
+  VennDiagramProps,
+  VennSet,
+  VennIntersection,
+} from "./display/statistics/VennDiagram"
+
+export { StemAndLeaf } from "./display/statistics/StemAndLeaf"
+export type { StemAndLeafProps } from "./display/statistics/StemAndLeaf"
+
+export { BoxPlot } from "./display/statistics/BoxPlot"
+export type { BoxPlotProps, FiveNumberSummary } from "./display/statistics/BoxPlot"

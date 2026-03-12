@@ -97,6 +97,15 @@ export const Guides: Section[] = [
     ],
   },
   {
+    title: "Statistics",
+    guides: [
+      { title: "Box Plot", slug: "box-plot" },
+      { title: "Stem-and-Leaf", slug: "stem-and-leaf" },
+      { title: "Probability Tree", slug: "probability-tree" },
+      { title: "Venn Diagram", slug: "venn-diagram" },
+    ],
+  },
+  {
     title: "Examples",
     guides: [
       { title: "Bézier curves", slug: "bezier-curves" },
