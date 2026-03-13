@@ -6,7 +6,11 @@ import Link from "next/link"
 import fancyFx from "../../helpers/fancyFx"
 
 export function NextPrevButtons() {
-  const [sectionTitleKebab, guideTitleKebab] = useSelectedLayoutSegments()
+  const segments = useSelectedLayoutSegments()
+  const [sectionTitleKebab, guideTitleKebab] = segments
+
+  if (!sectionTitleKebab || !guideTitleKebab) return null
+
   const { next, previous } = getDocContext(sectionTitleKebab, guideTitleKebab)
 
   return (

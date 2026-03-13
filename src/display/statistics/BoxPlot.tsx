@@ -271,11 +271,32 @@ export function BoxPlot({
       {showAxis &&
         (() => {
           const axisStroke = axisColor || labelColor
-          // Compute nice tick range: from floor(min) to ceil(max)
-          const tickMin = Math.floor(summary.min)
-          const tickMax = Math.ceil(summary.max)
+          // Compute nice tick step based on data range and pixel space
+          const range = summary.max - summary.min
+          const pxPerUnit = Math.abs(
+            vec.transform([1, 0], combinedTransform)[0] -
+            vec.transform([0, 0], combinedTransform)[0]
+          )
+          // Minimum pixel spacing between ticks (~40px)
+          const minTickSpacingPx = 40
+          const minStep = minTickSpacingPx / pxPerUnit
+
+          // Pick a "nice" step: 1, 2, 5, 10, 20, 50, 100, ...
+          function niceStep(min: number): number {
+            const magnitude = Math.pow(10, Math.floor(Math.log10(min)))
+            const residual = min / magnitude
+            if (residual <= 1) return magnitude
+            if (residual <= 2) return 2 * magnitude
+            if (residual <= 5) return 5 * magnitude
+            return 10 * magnitude
+          }
+
+          const step = range <= 0 ? 1 : niceStep(Math.max(minStep, range / 20))
+
+          const tickMin = Math.floor(summary.min / step) * step
+          const tickMax = Math.ceil(summary.max / step) * step
           // Extend the axis line slightly beyond the data range
-          const axisPadding = 0.5
+          const axisPadding = step * 0.5
           const axisLeftWorld: vec.Vector2 = [tickMin - axisPadding, y]
           const axisRightWorld: vec.Vector2 = [tickMax + axisPadding, y]
           const axisLeftPx = vec.transform(axisLeftWorld, combinedTransform)
@@ -287,10 +308,10 @@ export function BoxPlot({
           const axisY = axisPx[1]
           const tickHalfPx = 4
 
-          // Generate integer ticks
+          // Generate ticks at nice intervals
           const ticks: number[] = []
-          for (let t = tickMin; t <= tickMax; t++) {
-            ticks.push(t)
+          for (let t = tickMin; t <= tickMax + step * 0.01; t += step) {
+            ticks.push(Math.round(t * 1e6) / 1e6)
           }
 
           return (

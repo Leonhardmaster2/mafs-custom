@@ -85,14 +85,24 @@ export function sampleParametric(
   maxDepth: number,
   threshold: number,
 ) {
-  let result = "M "
+  let result = ""
+  let lastWasFinite = false
 
   sample({
     fn,
     error: (a, b) => vec.squareDist(a, b),
     onPoint: (_t, [x, y]) => {
       if (Number.isFinite(x) && Number.isFinite(y)) {
-        result += `${x} ${y} L `
+        // If the previous point was non-finite (or this is the first point),
+        // start a new sub-path with M instead of continuing with L
+        if (!lastWasFinite) {
+          result += `M ${x} ${y} L `
+        } else {
+          result += `${x} ${y} L `
+        }
+        lastWasFinite = true
+      } else {
+        lastWasFinite = false
       }
     },
     lerp: (p1, p2, t) => vec.lerp(p1, p2, t),
@@ -102,7 +112,12 @@ export function sampleParametric(
     threshold,
   })
 
-  return result.substring(0, result.length - 2)
+  // Remove trailing " L "
+  if (result.endsWith("L ")) {
+    result = result.substring(0, result.length - 2)
+  }
+
+  return result
 }
 
 export function sampleInequality(

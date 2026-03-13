@@ -97,3 +97,40 @@ export type { StemAndLeafProps } from "./display/statistics/StemAndLeaf"
 
 export { BoxPlot } from "./display/statistics/BoxPlot"
 export type { BoxPlotProps, FiveNumberSummary } from "./display/statistics/BoxPlot"
+
+export { Histogram } from "./display/statistics/Histogram"
+export type { HistogramProps } from "./display/statistics/Histogram"
+
+export { ScatterPlot } from "./display/statistics/ScatterPlot"
+export type { ScatterPlotProps, ScatterSeries, RegressionConfig } from "./display/statistics/ScatterPlot"
+
+export { BarChart } from "./display/statistics/BarChart"
+export type { BarChartProps, BarChartItem, BarChartGroup } from "./display/statistics/BarChart"
+
+export { PieChart } from "./display/statistics/PieChart"
+export type { PieChartProps, PieChartSlice } from "./display/statistics/PieChart"
+
+// Analysis & Calculus components
+export { NumberLine } from "./display/NumberLine"
+export type { NumberLineProps, NumberLineInterval, NumberLinePoint } from "./display/NumberLine"
+
+export { Angle } from "./display/Angle"
+export type { AngleProps } from "./display/Angle"
+
+export { TangentLine } from "./display/TangentLine"
+export type { TangentLineProps } from "./display/TangentLine"
+
+export { AreaUnderCurve } from "./display/AreaUnderCurve"
+export type { AreaUnderCurveProps, RiemannSumsConfig } from "./display/AreaUnderCurve"
+
+export { Asymptote } from "./display/Asymptote"
+export type { AsymptoteProps } from "./display/Asymptote"
+
+export { PiecewiseFunction } from "./display/PiecewiseFunction"
+export type { PiecewiseFunctionProps, PiecewisePiece, EndpointConfig } from "./display/PiecewiseFunction"
+
+export { NormalDistribution } from "./display/NormalDistribution"
+export type { NormalDistributionProps, NormalRegion } from "./display/NormalDistribution"
+
+export { ComplexPlane } from "./display/ComplexPlane"
+export type { ComplexPlaneProps, ComplexPoint } from "./display/ComplexPlane"

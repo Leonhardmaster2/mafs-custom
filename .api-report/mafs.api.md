@@ -9,6 +9,115 @@ import { KatexOptions } from 'katex';
 import * as React_2 from 'react';
 
 // @public (undocumented)
+export function Angle({ vertex, from, to, radius, label, color, showRightAngle, filled, fillOpacity, weight, labelSize, }: AngleProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace Angle {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface AngleProps {
+    color?: string;
+    filled?: boolean;
+    fillOpacity?: number;
+    from: vec.Vector2;
+    label?: string;
+    labelSize?: number;
+    radius?: number;
+    showRightAngle?: boolean;
+    to: vec.Vector2;
+    vertex: vec.Vector2;
+    weight?: number;
+}
+
+// @public (undocumented)
+export function AreaUnderCurve({ fn, from, to, color, opacity, showBounds, boundColor, riemannSums, label, labelSize, weight, showAreaComparison, }: AreaUnderCurveProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace AreaUnderCurve {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface AreaUnderCurveProps {
+    boundColor?: string;
+    color?: string;
+    fn: (x: number) => number;
+    from: number;
+    label?: string;
+    labelSize?: number;
+    opacity?: number;
+    riemannSums?: RiemannSumsConfig;
+    showAreaComparison?: boolean;
+    showBounds?: boolean;
+    to: number;
+    weight?: number;
+}
+
+// @public (undocumented)
+export function Asymptote({ type, value, slope, intercept, color, style, label, weight, opacity, labelSize, }: AsymptoteProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace Asymptote {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface AsymptoteProps {
+    color?: string;
+    intercept?: number;
+    label?: string;
+    labelSize?: number;
+    opacity?: number;
+    slope?: number;
+    style?: "solid" | "dashed";
+    type: "vertical" | "horizontal" | "oblique";
+    value?: number;
+    weight?: number;
+}
+
+// @public (undocumented)
+export function BarChart({ data, groups, orientation, barWidth, gap, showValueLabels, color, opacity, labelSize, labelColor, weight, }: BarChartProps): JSX_2.Element | null;
+
+// @public (undocumented)
+export namespace BarChart {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface BarChartGroup {
+    colors?: string[];
+    label: string;
+    values: number[];
+}
+
+// @public (undocumented)
+export interface BarChartItem {
+    label: string;
+    value: number;
+}
+
+// @public (undocumented)
+export interface BarChartProps {
+    barWidth?: number;
+    color?: string;
+    data?: BarChartItem[];
+    gap?: number;
+    groups?: BarChartGroup[];
+    labelColor?: string;
+    labelSize?: number;
+    opacity?: number;
+    orientation?: "vertical" | "horizontal";
+    showValueLabels?: boolean;
+    weight?: number;
+}
+
+// @public (undocumented)
 export function BoxPlot({ data, y, height, color, fillOpacity, weight, showLabels, labelSize, labelColor, labelPosition, showAxis, axisColor, }: BoxPlotProps): JSX_2.Element;
 
 // @public (undocumented)
@@ -56,6 +165,33 @@ export interface CircleProps extends Filled {
 }
 
 // @public (undocumented)
+export function ComplexPlane({ points, showConjugate, showModulus, showArgument, labelSize, pointRadius, argRadius, }: ComplexPlaneProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace ComplexPlane {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface ComplexPlaneProps {
+    argRadius?: number;
+    labelSize?: number;
+    pointRadius?: number;
+    points: ComplexPoint[];
+    showArgument?: boolean;
+    showConjugate?: boolean;
+    showModulus?: boolean;
+}
+
+// @public (undocumented)
+export interface ComplexPoint {
+    color?: string;
+    label?: string;
+    z: vec.Vector2;
+}
+
+// @public (undocumented)
 export type ConstraintFunction = (position: vec.Vector2) => vec.Vector2;
 
 // @public (undocumented)
@@ -92,6 +228,13 @@ export interface EllipseProps extends Filled {
 }
 
 // @public (undocumented)
+export interface EndpointConfig {
+    fromLeft?: boolean;
+    fromRight?: boolean;
+    value: number;
+}
+
+// @public (undocumented)
 export interface Filled {
     // (undocumented)
     color?: string;
@@ -117,6 +260,31 @@ export interface FiveNumberSummary {
     q1: number;
     // (undocumented)
     q3: number;
+}
+
+// @public (undocumented)
+export function Histogram({ data, bins, rawData, binCount, color, opacity, showFrequencyLabels, showBinLabels, labelSize, labelColor, weight, hoverOpacity, }: HistogramProps): JSX_2.Element | null;
+
+// @public (undocumented)
+export namespace Histogram {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface HistogramProps {
+    binCount?: number;
+    bins?: number[];
+    color?: string;
+    data?: number[];
+    hoverOpacity?: number;
+    labelColor?: string;
+    labelSize?: number;
+    opacity?: number;
+    rawData?: number[];
+    showBinLabels?: boolean;
+    showFrequencyLabels?: boolean;
+    weight?: number;
 }
 
 // @public (undocumented)
@@ -234,6 +402,82 @@ export interface MovablePointProps {
 }
 
 // @public (undocumented)
+export function NormalDistribution({ mean, stdDev, domain, color, shade, regions, showMeanLine, showStdDevMarkers, showValues, weight, opacity, labelSize, }: NormalDistributionProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace NormalDistribution {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface NormalDistributionProps {
+    color?: string;
+    domain?: vec.Vector2;
+    labelSize?: number;
+    mean?: number;
+    opacity?: number;
+    regions?: NormalRegion[];
+    shade?: NormalRegion;
+    showMeanLine?: boolean;
+    showStdDevMarkers?: boolean;
+    showValues?: boolean;
+    stdDev?: number;
+    weight?: number;
+}
+
+// @public (undocumented)
+export interface NormalRegion {
+    color?: string;
+    from: number;
+    label?: string;
+    opacity?: number;
+    to: number;
+}
+
+// @public (undocumented)
+export function NumberLine({ range: [rangeMin, rangeMax], ticks: tickConfig, intervals, points, arrows, color, labelSize, intervalWeight, }: NumberLineProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace NumberLine {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface NumberLineInterval {
+    color?: string;
+    end: number;
+    endInclusive?: boolean;
+    label?: string;
+    start: number;
+    startInclusive?: boolean;
+}
+
+// @public (undocumented)
+export interface NumberLinePoint {
+    color?: string;
+    label?: string;
+    value: number;
+}
+
+// @public (undocumented)
+export interface NumberLineProps {
+    arrows?: boolean;
+    color?: string;
+    height?: number;
+    intervals?: NumberLineInterval[];
+    intervalWeight?: number;
+    labelSize?: number;
+    points?: NumberLinePoint[];
+    range: vec.Vector2;
+    ticks?: {
+        step?: number;
+        labels?: boolean;
+    };
+}
+
+// @public (undocumented)
 export interface OfXProps extends Omit<ParametricProps, "xy" | "domain" | "t"> {
     // (undocumented)
     domain?: vec.Vector2;
@@ -258,6 +502,64 @@ export interface OfYProps extends Omit<ParametricProps, "xy" | "domain" | "t"> {
 //
 // @public (undocumented)
 export type ParametricProps = ParametricPropsNew | ParametricPropsLegacy;
+
+// @public (undocumented)
+export function PiecewiseFunction({ pieces, showEndpoints, endpointConfig, weight, color, endpointRadius, }: PiecewiseFunctionProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace PiecewiseFunction {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface PiecewiseFunctionProps {
+    color?: string;
+    endpointConfig?: EndpointConfig[];
+    endpointRadius?: number;
+    pieces: PiecewisePiece[];
+    showEndpoints?: boolean;
+    weight?: number;
+}
+
+// @public (undocumented)
+export interface PiecewisePiece {
+    color?: string;
+    domain: vec.Vector2;
+    fn: (x: number) => number;
+}
+
+// @public (undocumented)
+export function PieChart({ data, center, radius, innerRadius, showLabels, showValues, labelPosition, startAngle, opacity, labelSize, weight, centerLabel, }: PieChartProps): JSX_2.Element | null;
+
+// @public (undocumented)
+export namespace PieChart {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface PieChartProps {
+    center?: vec.Vector2;
+    centerLabel?: string;
+    data: PieChartSlice[];
+    innerRadius?: number;
+    labelPosition?: "inside" | "outside" | "callout";
+    labelSize?: number;
+    opacity?: number;
+    radius?: number;
+    showLabels?: boolean;
+    showValues?: boolean;
+    startAngle?: number;
+    weight?: number;
+}
+
+// @public (undocumented)
+export interface PieChartSlice {
+    color?: string;
+    label: string;
+    value: number;
+}
 
 // @public (undocumented)
 export const Plot: {
@@ -381,6 +683,52 @@ export interface ProbabilityTreeProps {
 }
 
 // @public (undocumented)
+export interface RegressionConfig {
+    color?: string;
+    labelColor?: string;
+    showEquation?: boolean;
+    showR2?: boolean;
+    type?: "linear" | "quadratic" | "exponential" | "none";
+    weight?: number;
+}
+
+// @public (undocumented)
+export interface RiemannSumsConfig {
+    color?: string;
+    n: number;
+    opacity?: number;
+    showOutlines?: boolean;
+    type?: "left" | "right" | "midpoint" | "trapezoid";
+}
+
+// @public (undocumented)
+export function ScatterPlot({ points, series, color, pointRadius, regression, showMeanLines, labelSize, }: ScatterPlotProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace ScatterPlot {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface ScatterPlotProps {
+    color?: string;
+    labelSize?: number;
+    pointRadius?: number;
+    points?: vec.Vector2[];
+    regression?: RegressionConfig;
+    series?: ScatterSeries[];
+    showMeanLines?: boolean;
+}
+
+// @public (undocumented)
+export interface ScatterSeries {
+    color?: string;
+    label?: string;
+    points: vec.Vector2[];
+}
+
+// @public (undocumented)
 export interface SegmentProps extends Stroked {
     // (undocumented)
     point1: vec.Vector2;
@@ -435,6 +783,32 @@ export interface Stroked {
     // (undocumented)
     style?: "solid" | "dashed";
     // (undocumented)
+    weight?: number;
+}
+
+// @public (undocumented)
+export function TangentLine({ fn, at, length, color, showPoint, pointColor, showSlope, slopeLabel, dx, weight, style, opacity, labelSize, }: TangentLineProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace TangentLine {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface TangentLineProps {
+    at: number;
+    color?: string;
+    dx?: number;
+    fn: (x: number) => number;
+    labelSize?: number;
+    length?: number;
+    opacity?: number;
+    pointColor?: string;
+    showPoint?: boolean;
+    showSlope?: boolean;
+    slopeLabel?: string;
+    style?: "solid" | "dashed";
     weight?: number;
 }
 

@@ -5,7 +5,11 @@ import fancyFx from "../../helpers/fancyFx"
 import { getDocContext } from "./guides"
 
 export function Title() {
-  const [sectionTitleKebab, guideTitleKebab] = useSelectedLayoutSegments()
+  const segments = useSelectedLayoutSegments()
+  const [sectionTitleKebab, guideTitleKebab] = segments
+
+  if (!sectionTitleKebab || !guideTitleKebab) return null
+
   const { current } = getDocContext(sectionTitleKebab, guideTitleKebab)
 
   return (
