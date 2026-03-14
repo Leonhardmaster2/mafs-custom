@@ -25,7 +25,7 @@ export default function SlopeFieldExample() {
         height={450}
         viewBox={{ x: [-5, 5], y: [-5, 5] }}
         pan
-        zoom={{ min: 0.1, max: 10 }}
+        zoom={{ min: 0.001, max: 10000 }}
         debug={debug}
       >
         <Coordinates.Cartesian xAxis="auto" yAxis="auto" />

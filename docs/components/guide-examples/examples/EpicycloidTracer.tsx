@@ -84,7 +84,7 @@ export default function EpicycloidTracer() {
         height={500}
         viewBox={{ x: [-3, 3], y: [-3, 3] }}
         pan
-        zoom={{ min: 0.2, max: 10 }}
+        zoom={{ min: 0.001, max: 10000 }}
         debug={debug}
       >
         <Coordinates.Cartesian xAxis="auto" yAxis="auto" />

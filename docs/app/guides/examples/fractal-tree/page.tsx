@@ -10,25 +10,28 @@ export default function Page() {
   return (
     <>
       <p>
-        A recursive fractal tree that grows from trunk to tips with animated branching. Drag the
-        green point horizontally to adjust the branching angle. Scroll to zoom into the tree and
-        explore the self-similar branching structure — the coordinate grid automatically adapts
-        to the zoom level, showing finer subdivisions (0.1, 0.01, …) as you zoom in. Toggle
-        the <strong>Debug</strong> checkbox to see the pane-based lazy loading in action — only
-        the visible region is rendered.
+        An <strong>infinite</strong> recursive fractal tree with viewport-culled rendering. Zoom in
+        as far as you want — new branches are generated on the fly based on what&apos;s visible. The
+        tree is self-similar at every scale. Drag the green point horizontally to adjust the branching
+        angle.
       </p>
 
       <CodeAndExample example={FractalTree} />
 
-      <h2>Concepts demonstrated</h2>
+      <h2>Performance optimizations</h2>
       <ul>
-        <li>Recursive geometry with configurable depth</li>
-        <li>Animated growth using <code>useStopwatch</code></li>
-        <li>Path batching for rendering 1000+ branches efficiently</li>
-        <li>HSL color interpolation by depth</li>
-        <li>Auto-scaling coordinate grid via <code>xAxis=&quot;auto&quot;</code></li>
-        <li>Debug mode showing the optimized viewport and pane boundaries</li>
+        <li><strong>Hard branch cap</strong> — maximum 4,000 branches per frame, regardless of zoom</li>
+        <li><strong>Pixel-size culling</strong> — branches smaller than 3px are not rendered or recursed into</li>
+        <li><strong>Viewport culling</strong> — entire subtrees outside the visible area are skipped using geometric-series bounding boxes</li>
+        <li><strong>No pre-generation</strong> — branches are computed lazily during render, only for the visible region at the current zoom</li>
+        <li><strong>Path batching</strong> — one SVG <code>&lt;path&gt;</code> per depth level instead of one per branch</li>
+        <li><strong>Inline matrix math</strong> — avoids per-branch <code>vec.transform</code> calls; cos/sin pre-computed once per frame</li>
+        <li><strong>Array accumulation</strong> — coordinates stored in typed arrays, joined into SVG path strings once at the end</li>
       </ul>
+
+      <p>
+        Toggle <strong>Debug</strong> to see the branch count vs. budget and the current max recursion depth.
+      </p>
     </>
   )
 }

@@ -28,7 +28,7 @@ export default function WaveInterference() {
         height={400}
         viewBox={{ x: [-6, 6], y: [-4, 4] }}
         pan
-        zoom={{ min: 0.2, max: 10 }}
+        zoom={{ min: 0.001, max: 10000 }}
         debug={debug}
       >
         <Coordinates.Cartesian xAxis="auto" yAxis="auto" />

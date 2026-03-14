@@ -17,7 +17,7 @@ export default function TaylorSeriesExample() {
         height={400}
         viewBox={{ x: [-5, 5], y: [-3, 3] }}
         pan
-        zoom={{ min: 0.2, max: 10 }}
+        zoom={{ min: 0.001, max: 10000 }}
         debug={debug}
       >
         <Coordinates.Cartesian xAxis="auto" yAxis="auto" />

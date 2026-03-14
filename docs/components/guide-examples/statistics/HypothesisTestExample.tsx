@@ -15,7 +15,7 @@ export default function HypothesisTestExample() {
         height={400}
         viewBox={{ x: [-4, 4], y: [-0.05, 0.45] }}
         pan
-        zoom={{ min: 0.2, max: 10 }}
+        zoom={{ min: 0.001, max: 10000 }}
         debug={debug}
       >
         <Coordinates.Cartesian
