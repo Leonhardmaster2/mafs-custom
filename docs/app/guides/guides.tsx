@@ -108,6 +108,8 @@ export const Guides: Section[] = [
       { title: "Bar Chart", slug: "bar-chart" },
       { title: "Pie Chart", slug: "pie-chart" },
       { title: "Scatter Plot", slug: "scatter-plot" },
+      { separator: true },
+      { title: "Hypothesis Test", slug: "hypothesis-test" },
     ],
   },
   {
@@ -121,6 +123,10 @@ export const Guides: Section[] = [
       { title: "Piecewise Function", slug: "piecewise-function" },
       { title: "Normal Distribution", slug: "normal-distribution" },
       { title: "Complex Plane", slug: "complex-plane" },
+      { separator: true },
+      { title: "Taylor Series", slug: "taylor-series" },
+      { title: "Slope Field", slug: "slope-field" },
+      { title: "Geometric Construction", slug: "geometric-construction" },
     ],
   },
   {
@@ -130,6 +136,11 @@ export const Guides: Section[] = [
       { title: "Riemann sums", slug: "riemann-sums" },
       { title: "Fancy parabola", slug: "fancy-parabola" },
       { title: "Projectile motion", slug: "projectile-motion" },
+      { separator: true },
+      { title: "Linear transform", slug: "linear-transform" },
+      { title: "Wave interference", slug: "wave-interference" },
+      { title: "Fractal tree", slug: "fractal-tree" },
+      { title: "Fourier epicycles", slug: "fourier-epicycles" },
     ],
   },
 ]

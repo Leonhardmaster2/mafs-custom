@@ -194,6 +194,44 @@ export interface ComplexPoint {
 // @public (undocumented)
 export type ConstraintFunction = (position: vec.Vector2) => vec.Vector2;
 
+// @public
+export type ConstructionStep = {
+    type: "given-point";
+    id: string;
+    position: vec.Vector2;
+    label?: string;
+} | {
+    type: "given-segment";
+    id: string;
+    from: string;
+    to: string;
+} | {
+    type: "compass-arc";
+    id: string;
+    center: string;
+    through: string;
+    sweep?: vec.Vector2;
+} | {
+    type: "line-through";
+    id: string;
+    point1: string;
+    point2: string;
+} | {
+    type: "intersection";
+    id: string;
+    of: [string, string];
+    index?: 0 | 1;
+    label?: string;
+} | {
+    type: "result-segment";
+    from: string;
+    to: string;
+} | {
+    type: "result-line";
+    through1: string;
+    through2: string;
+};
+
 // @public (undocumented)
 export const Coordinates: {
     Cartesian: typeof Cartesian;
@@ -263,6 +301,31 @@ export interface FiveNumberSummary {
 }
 
 // @public (undocumented)
+export function GeometricConstruction({ construction, visibleSteps, showLabels, constructionOpacity, arcColor, resultColor, givenColor, intersectionColor, arcWeight, resultWeight, pointRadius, labelSize, }: GeometricConstructionProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace GeometricConstruction {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface GeometricConstructionProps {
+    arcColor?: string;
+    arcWeight?: number;
+    construction: ConstructionStep[];
+    constructionOpacity?: number;
+    givenColor?: string;
+    intersectionColor?: string;
+    labelSize?: number;
+    pointRadius?: number;
+    resultColor?: string;
+    resultWeight?: number;
+    showLabels?: boolean;
+    visibleSteps?: number;
+}
+
+// @public (undocumented)
 export function Histogram({ data, bins, rawData, binCount, color, opacity, showFrequencyLabels, showBinLabels, labelSize, labelColor, weight, hoverOpacity, }: HistogramProps): JSX_2.Element | null;
 
 // @public (undocumented)
@@ -284,6 +347,42 @@ export interface HistogramProps {
     rawData?: number[];
     showBinLabels?: boolean;
     showFrequencyLabels?: boolean;
+    weight?: number;
+}
+
+// @public (undocumented)
+export function HypothesisTest({ mean, stdDev, alpha, alternative, testStatistic, showRejectionRegion, showPValue, showCriticalValues, showTestStatistic, curveColor, rejectionColor, rejectionOpacity, pValueColor, pValueOpacity, showAcceptanceRegion, acceptanceColor, acceptanceOpacity, weight, labelSize, showDecision, showCriticalLabels, showPValueLabel, domain, }: HypothesisTestProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace HypothesisTest {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface HypothesisTestProps {
+    acceptanceColor?: string;
+    acceptanceOpacity?: number;
+    alpha?: number;
+    alternative: "less" | "greater" | "two-sided";
+    curveColor?: string;
+    domain?: vec.Vector2;
+    labelSize?: number;
+    mean?: number;
+    pValueColor?: string;
+    pValueOpacity?: number;
+    rejectionColor?: string;
+    rejectionOpacity?: number;
+    showAcceptanceRegion?: boolean;
+    showCriticalLabels?: boolean;
+    showCriticalValues?: boolean;
+    showDecision?: boolean;
+    showPValue?: boolean;
+    showPValueLabel?: boolean;
+    showRejectionRegion?: boolean;
+    showTestStatistic?: boolean;
+    stdDev?: number;
+    testStatistic?: number;
     weight?: number;
 }
 
@@ -328,6 +427,36 @@ export const Line: {
     ThroughPoints: typeof ThroughPoints;
     Segment: typeof Segment;
 };
+
+// @public (undocumented)
+export function LinearTransformVisualizer({ matrix, t, showGrid, gridLines, showOriginalBasis, showTransformedBasis, showUnitShape, showEigenvectors, showDeterminant, basisColor1, basisColor2, gridColor, originalOpacity, gridOpacity, eigenColor, weight, labelSize, }: LinearTransformVisualizerProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace LinearTransformVisualizer {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface LinearTransformVisualizerProps {
+    basisColor1?: string;
+    basisColor2?: string;
+    eigenColor?: string;
+    gridColor?: string;
+    gridLines?: number;
+    gridOpacity?: number;
+    labelSize?: number;
+    matrix: [[number, number], [number, number]];
+    originalOpacity?: number;
+    showDeterminant?: boolean;
+    showEigenvectors?: boolean;
+    showGrid?: boolean;
+    showOriginalBasis?: boolean;
+    showTransformedBasis?: boolean;
+    showUnitShape?: boolean;
+    t?: number;
+    weight?: number;
+}
 
 // @public (undocumented)
 export function Mafs({ width: propWidth, height: propHeight, pan, zoom, viewBox, preserveAspectRatio, children, ssr, debug, onClick, }: MafsProps): JSX_2.Element;
@@ -737,6 +866,37 @@ export interface SegmentProps extends Stroked {
 }
 
 // @public (undocumented)
+export function SlopeField({ ode, step: stepProp, segmentLength, color, opacity, weight, solutions, integrationMethod, integrationStep, }: SlopeFieldProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace SlopeField {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface SlopeFieldProps {
+    color?: string;
+    integrationMethod?: "euler" | "rk4";
+    integrationStep?: number;
+    ode: (x: number, y: number) => number;
+    opacity?: number;
+    segmentLength?: number;
+    solutions?: SolutionCurveConfig[];
+    step?: number | "auto";
+    weight?: number;
+}
+
+// @public (undocumented)
+export interface SolutionCurveConfig {
+    color?: string;
+    domain?: vec.Vector2;
+    initialCondition: vec.Vector2;
+    style?: "solid" | "dashed";
+    weight?: number;
+}
+
+// @public (undocumented)
 export function StemAndLeaf({ data, x, y, stemColor, leafColor, fontSize, charWidth, rowHeight, showKey, keyOffset, separatorColor, }: StemAndLeafProps): JSX_2.Element | null;
 
 // @public (undocumented)
@@ -809,6 +969,37 @@ export interface TangentLineProps {
     showSlope?: boolean;
     slopeLabel?: string;
     style?: "solid" | "dashed";
+    weight?: number;
+}
+
+// @public (undocumented)
+export function TaylorSeries({ fn, center, order, showOriginal, showError, domain, originalColor, approximationColor, errorColor, errorOpacity, showOrderLabel, showCenter, centerColor, dx, numSamples, weight, labelSize, derivatives, }: TaylorSeriesProps): JSX_2.Element;
+
+// @public (undocumented)
+export namespace TaylorSeries {
+    var // (undocumented)
+    displayName: string;
+}
+
+// @public (undocumented)
+export interface TaylorSeriesProps {
+    approximationColor?: string;
+    center?: number;
+    centerColor?: string;
+    derivatives?: number[];
+    domain?: vec.Vector2;
+    dx?: number;
+    errorColor?: string;
+    errorOpacity?: number;
+    fn: (x: number) => number;
+    labelSize?: number;
+    numSamples?: number;
+    order: number;
+    originalColor?: string;
+    showCenter?: boolean;
+    showError?: boolean;
+    showOrderLabel?: boolean;
+    showOriginal?: boolean;
     weight?: number;
 }
 

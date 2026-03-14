@@ -134,3 +134,19 @@ export type { NormalDistributionProps, NormalRegion } from "./display/NormalDist
 
 export { ComplexPlane } from "./display/ComplexPlane"
 export type { ComplexPlaneProps, ComplexPoint } from "./display/ComplexPlane"
+
+export { TaylorSeries } from "./display/TaylorSeries"
+export type { TaylorSeriesProps } from "./display/TaylorSeries"
+
+export { SlopeField } from "./display/SlopeField"
+export type { SlopeFieldProps, SolutionCurveConfig } from "./display/SlopeField"
+
+export { LinearTransformVisualizer } from "./display/LinearTransformVisualizer"
+export type { LinearTransformVisualizerProps } from "./display/LinearTransformVisualizer"
+
+export { GeometricConstruction } from "./display/GeometricConstruction"
+export type { GeometricConstructionProps, ConstructionStep } from "./display/GeometricConstruction"
+
+// Advanced Statistics
+export { HypothesisTest } from "./display/statistics/HypothesisTest"
+export type { HypothesisTestProps } from "./display/statistics/HypothesisTest"
