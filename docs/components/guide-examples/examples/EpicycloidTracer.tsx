@@ -122,6 +122,7 @@ export default function EpicycloidTracer() {
         {/* Tip point */}
         <Point x={tipPosition[0]} y={tipPosition[1]} color={Theme.pink} />
         {debug && <Debug.ViewportInfo />}
+        {debug && <Debug.FpsCounter />}
       </Mafs>
 
       <div className="p-4 border-gray-700 border-t bg-black text-white flex items-center gap-4">

@@ -242,6 +242,7 @@ export const Coordinates: {
 export const Debug: {
     ViewportInfo: typeof ViewportInfo;
     TransformWidget: typeof TransformWidget;
+    FpsCounter: typeof FpsCounter;
 };
 
 // @public (undocumented)
@@ -866,7 +867,7 @@ export interface SegmentProps extends Stroked {
 }
 
 // @public (undocumented)
-export function SlopeField({ ode, step: stepProp, segmentLength, color, opacity, weight, solutions, integrationMethod, integrationStep, }: SlopeFieldProps): JSX_2.Element;
+export function SlopeField({ ode, step: stepProp, segmentLength, color, opacity, weight, solutions, integrationMethod, integrationStep: integrationStepProp, }: SlopeFieldProps): JSX_2.Element;
 
 // @public (undocumented)
 export namespace SlopeField {
@@ -878,7 +879,7 @@ export namespace SlopeField {
 export interface SlopeFieldProps {
     color?: string;
     integrationMethod?: "euler" | "rk4";
-    integrationStep?: number;
+    integrationStep?: number | "auto";
     ode: (x: number, y: number) => number;
     opacity?: number;
     segmentLength?: number;
@@ -1247,8 +1248,9 @@ export interface VennSet {
 
 // Warnings were encountered during analysis:
 //
-// src/debug/index.tsx:4:19 - (ae-forgotten-export) The symbol "ViewportInfo" needs to be exported by the entry point index.d.ts
-// src/debug/index.tsx:4:19 - (ae-forgotten-export) The symbol "TransformWidget" needs to be exported by the entry point index.d.ts
+// src/debug/index.tsx:5:19 - (ae-forgotten-export) The symbol "ViewportInfo" needs to be exported by the entry point index.d.ts
+// src/debug/index.tsx:5:19 - (ae-forgotten-export) The symbol "TransformWidget" needs to be exported by the entry point index.d.ts
+// src/debug/index.tsx:5:19 - (ae-forgotten-export) The symbol "FpsCounter" needs to be exported by the entry point index.d.ts
 // src/display/Coordinates/index.tsx:4:25 - (ae-forgotten-export) The symbol "Cartesian" needs to be exported by the entry point index.d.ts
 // src/display/Coordinates/index.tsx:4:25 - (ae-forgotten-export) The symbol "PolarCoordinates" needs to be exported by the entry point index.d.ts
 // src/display/Line.tsx:6:18 - (ae-forgotten-export) The symbol "PointAngle" needs to be exported by the entry point index.d.ts

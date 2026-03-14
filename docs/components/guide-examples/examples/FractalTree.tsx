@@ -13,16 +13,8 @@ import {
   usePaneContext,
 } from "mafs"
 
-/**
- * Hard cap on total rendered branches per frame.
- * 12k is enough for a lush tree while staying smooth on modern hardware.
- */
 const MAX_BRANCHES = 12000
-
-/** Hard cap on recursion depth (safety net — pixel culling stops earlier) */
 const ABS_MAX_DEPTH = 30
-
-/** Minimum pixel length to render a branch. At 1px branches are just barely visible. */
 const MIN_PX_LENGTH = 1
 
 function FractalTreeInner({ debug }: { debug: boolean }) {
@@ -47,51 +39,51 @@ function FractalTreeInner({ debug }: { debug: boolean }) {
   const [wxMin, wxMax] = xPaneRange
   const [wyMin, wyMax] = yPaneRange
 
-  // Pre-extract an approximate scale factor from the transform.
-  // For a typical Mafs view (no rotation), m[0] is scaleX and m[4] is scaleY.
-  // We use the average magnitude for a quick pixel-length estimate.
+  // Scale factor for quick pixel-length estimate
   const pxPerUnit = Math.max(Math.abs(combinedTransform[0]), Math.abs(combinedTransform[4]))
 
   const animFront = time / 0.3
 
+  // Matrix elements for inline transform (matches vec.transform formula)
+  const m0 = combinedTransform[0]
+  const m1 = combinedTransform[1]
+  const m2 = combinedTransform[2]
+  const m3 = combinedTransform[3]
+  const m4 = combinedTransform[4]
+  const m5 = combinedTransform[5]
+
   const depthPaths = React.useMemo(() => {
-    // Use arrays instead of string concatenation (much faster for large counts)
     const groups = new Map<number, number[]>()
     let totalBranches = 0
 
-    // Pre-compute cos/sin of branch angles (reused at every node)
-    const cosP = Math.cos(branchAngle)
-    const sinP = Math.sin(branchAngle)
-    const cosN = Math.cos(-branchAngle)
-    const sinN = Math.sin(-branchAngle)
-
+    // Use the simple, proven angle-based approach (not direction-vector rotation).
+    // This is the same algorithm as the original working tree.
     function recurse(
-      px: number, py: number,  // start position
-      dx: number, dy: number,  // direction vector (already scaled to length)
+      px: number, py: number,
+      angle: number,
+      length: number,
       depth: number,
     ) {
       if (totalBranches >= MAX_BRANCHES) return
       if (depth >= ABS_MAX_DEPTH) return
       if (depth > animFront) return
 
+      // Pixel-size culling
+      if (length * pxPerUnit < MIN_PX_LENGTH) return
+
+      // Compute endpoint
+      const dx = Math.cos(angle) * length
+      const dy = Math.sin(angle) * length
       const ex = px + dx
       const ey = py + dy
-      const length = Math.sqrt(dx * dx + dy * dy)
 
-      // Pixel-size culling: use the pre-extracted scale factor
-      // instead of transforming both endpoints
-      const pxLen = length * pxPerUnit
-      if (pxLen < MIN_PX_LENGTH) return
-
-      // Viewport culling with geometric subtree bound.
-      // The maximum extent of the full subtree from this branch endpoint is
-      // bounded by a geometric series: length * ratio / (1 - ratio).
-      // We use this as padding instead of the vague "length * 3".
-      const subtreeReach = length * lengthRatio / (1 - lengthRatio) + length
-      const bxMin = Math.min(px, ex) - subtreeReach
-      const bxMax = Math.max(px, ex) + subtreeReach
-      const byMin = Math.min(py, ey) - subtreeReach
-      const byMax = Math.max(py, ey) + subtreeReach
+      // Viewport culling: the full subtree from this branch can extend at most
+      // sum(length * ratio^k, k=0..inf) = length / (1 - ratio) in any direction
+      const reach = length / (1 - lengthRatio)
+      const bxMin = Math.min(px, ex) - reach
+      const bxMax = Math.max(px, ex) + reach
+      const byMin = Math.min(py, ey) - reach
+      const byMax = Math.max(py, ey) + reach
 
       if (bxMax < wxMin || bxMin > wxMax || byMax < wyMin || byMin > wyMax) {
         return
@@ -102,14 +94,11 @@ function FractalTreeInner({ debug }: { debug: boolean }) {
       const aex = px + dx * growFrac
       const aey = py + dy * growFrac
 
-      // Transform to pixel space: vec.transform formula is
-      //   result_x = x * m[0] + y * m[1] + m[2]
-      //   result_y = x * m[3] + y * m[4] + m[5]
-      const m = combinedTransform
-      const psx = px * m[0] + py * m[1] + m[2]
-      const psy = px * m[3] + py * m[4] + m[5]
-      const pex = aex * m[0] + aey * m[1] + m[2]
-      const pey = aex * m[3] + aey * m[4] + m[5]
+      // Inline transform to pixel space
+      const psx = px * m0 + py * m1 + m2
+      const psy = px * m3 + py * m4 + m5
+      const pex = aex * m0 + aey * m1 + m2
+      const pey = aex * m3 + aey * m4 + m5
 
       // Emit to depth group
       let arr = groups.get(depth)
@@ -117,29 +106,17 @@ function FractalTreeInner({ debug }: { debug: boolean }) {
       arr.push(psx, psy, pex, pey)
       totalBranches++
 
-      // Recurse children (only after growth completes)
+      // Recurse into both children symmetrically
       if (growFrac >= 1) {
         const childLen = length * lengthRatio
-        const ndx = dx / length
-        const ndy = dy / length
-        // Left child: rotate direction by +branchAngle
-        const ldx = (ndx * cosP - ndy * sinP) * childLen
-        const ldy = (ndx * sinP + ndy * cosP) * childLen
-        // Right child: rotate direction by -branchAngle
-        const rdx = (ndx * cosN - ndy * sinN) * childLen
-        const rdy = (ndx * sinN + ndy * cosN) * childLen
-
-        recurse(ex, ey, ldx, ldy, depth + 1)
-        recurse(ex, ey, rdx, rdy, depth + 1)
+        recurse(ex, ey, angle + branchAngle, childLen, depth + 1)
+        recurse(ex, ey, angle - branchAngle, childLen, depth + 1)
       }
     }
 
-    // Initial trunk direction
-    const trunkDx = Math.cos(startAngle) * trunkLength
-    const trunkDy = Math.sin(startAngle) * trunkLength
-    recurse(startPos[0], startPos[1], trunkDx, trunkDy, 0)
+    recurse(startPos[0], startPos[1], startAngle, trunkLength, 0)
 
-    // Convert number arrays to SVG path strings (single allocation per depth)
+    // Convert number arrays to SVG path strings
     const pathGroups = new Map<number, string>()
     for (const [depth, coords] of groups.entries()) {
       const parts: string[] = new Array(coords.length / 4)
@@ -149,18 +126,18 @@ function FractalTreeInner({ debug }: { debug: boolean }) {
       pathGroups.set(depth, parts.join(""))
     }
 
-    return { paths: pathGroups, totalBranches, maxDepth: Math.max(...groups.keys(), 0) }
-  }, [branchAngle, combinedTransform, wxMin, wxMax, wyMin, wyMax, animFront, pxPerUnit])
+    return { paths: pathGroups, totalBranches, maxDepth: Math.max(0, ...groups.keys()) }
+  }, [branchAngle, m0, m1, m2, m3, m4, m5, wxMin, wxMax, wyMin, wyMax, animFront, pxPerUnit])
 
   return (
     <>
       <Coordinates.Cartesian xAxis="auto" yAxis="auto" />
 
       {Array.from(depthPaths.paths.entries()).map(([depth, pathD]) => {
-        const fraction = Math.min(1, depth / 20)
+        const fraction = Math.min(1, depth / 15)
         const hue = 30 + fraction * 90
         const lightness = 25 + fraction * 30
-        const strokeW = Math.max(0.5, 3 - depth * 0.2)
+        const strokeW = Math.max(0.5, 3 - depth * 0.25)
 
         return (
           <path
@@ -177,6 +154,7 @@ function FractalTreeInner({ debug }: { debug: boolean }) {
 
       {angleControl.element}
       {debug && <Debug.ViewportInfo />}
+      {debug && <Debug.FpsCounter />}
 
       {debug && (
         <g className="mafs-shadow" fontFamily="monospace" fontSize={12}>

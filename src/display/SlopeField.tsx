@@ -6,6 +6,9 @@ import { roundToNearestPowerOf10, pickClosestToValue } from "../math"
 import { Theme } from "./Theme"
 import { vec } from "../vec"
 
+const MAX_SEGMENTS = 8000
+const MAX_SOLUTION_POINTS = 10000
+
 export interface SolutionCurveConfig {
   /** Initial condition [x0, y0] */
   initialCondition: vec.Vector2
@@ -13,7 +16,7 @@ export interface SolutionCurveConfig {
   color?: string
   /** Stroke weight. Default: 2.5 */
   weight?: number
-  /** Domain for integration [xMin, xMax]. Default: derived from pane bounds */
+  /** Domain for integration [xMin, xMax]. Default: derived from visible bounds */
   domain?: vec.Vector2
   /** Stroke style. Default: "solid" */
   style?: "solid" | "dashed"
@@ -40,8 +43,8 @@ export interface SlopeFieldProps {
   solutions?: SolutionCurveConfig[]
   /** Numerical integration method for solution curves. Default: "rk4" */
   integrationMethod?: "euler" | "rk4"
-  /** Integration step size for solution curves. Default: 0.02 */
-  integrationStep?: number
+  /** Integration step size for solution curves. Default: "auto" */
+  integrationStep?: number | "auto"
 }
 
 export function SlopeField({
@@ -53,15 +56,16 @@ export function SlopeField({
   weight = 1.5,
   solutions,
   integrationMethod = "rk4",
-  integrationStep = 0.02,
+  integrationStep: integrationStepProp = "auto",
 }: SlopeFieldProps) {
   const { viewTransform: pixelMatrix } = useTransformContext()
-  const { xPanes, yPanes } = usePaneContext()
-  const { xSpan } = useSpanContext()
+  const { xPaneRange, yPaneRange } = usePaneContext()
+  const { xSpan, ySpan } = useSpanContext()
+
+  const [wxMin, wxMax] = xPaneRange
+  const [wyMin, wyMax] = yPaneRange
 
   // Auto-compute step from viewport span so the field adapts to zoom level.
-  // Uses the same rounding logic as Coordinates.Cartesian's auto mode:
-  // divide the visible span to get roughly 20 segments across the viewport.
   let step: number
   if (stepProp === "auto") {
     const idealStep = xSpan / 20
@@ -75,61 +79,87 @@ export function SlopeField({
 
   const segLen = segmentLength ?? step * 0.8
 
-  // Build the slope field as a single batched path
-  let fieldD = ""
+  // Build the slope field as a single batched path over the full visible range.
+  // Uses xPaneRange/yPaneRange (continuous bounds) instead of iterating discrete panes.
+  const fieldD = React.useMemo(() => {
+    const parts: string[] = []
+    let count = 0
 
-  for (const [xMin, xMax] of xPanes) {
-    for (const [yMin, yMax] of yPanes) {
-      for (let x = Math.floor(xMin / step) * step; x <= Math.ceil(xMax); x += step) {
-        for (let y = Math.floor(yMin / step) * step; y <= Math.ceil(yMax); y += step) {
-          const m = ode(x, y)
-          if (!isFinite(m)) continue
+    const xStart = Math.floor(wxMin / step) * step
+    const xEnd = Math.ceil(wxMax / step) * step
+    const yStart = Math.floor(wyMin / step) * step
+    const yEnd = Math.ceil(wyMax / step) * step
 
-          // Direction vector [1, m], normalized, scaled to segLen/2
-          const mag = Math.sqrt(1 + m * m)
-          const dx = (segLen / 2) * (1 / mag)
-          const dy = (segLen / 2) * (m / mag)
+    for (let x = xStart; x <= xEnd; x += step) {
+      for (let y = yStart; y <= yEnd; y += step) {
+        if (count >= MAX_SEGMENTS) break
+        const m = ode(x, y)
+        if (!isFinite(m)) continue
 
-          const start: vec.Vector2 = [x - dx, y - dy]
-          const end: vec.Vector2 = [x + dx, y + dy]
+        // Direction vector [1, m], normalized, scaled to segLen/2
+        const mag = Math.sqrt(1 + m * m)
+        const dx = (segLen / 2) * (1 / mag)
+        const dy = (segLen / 2) * (m / mag)
 
-          const pxStart = vec.transform(start, pixelMatrix)
-          const pxEnd = vec.transform(end, pixelMatrix)
+        const sx = x - dx
+        const sy = y - dy
+        const ex = x + dx
+        const ey = y + dy
 
-          fieldD += `M ${pxStart[0]} ${pxStart[1]} L ${pxEnd[0]} ${pxEnd[1]} `
-        }
+        // Inline transform to pixel space
+        const psx = sx * pixelMatrix[0] + sy * pixelMatrix[1] + pixelMatrix[2]
+        const psy = sx * pixelMatrix[3] + sy * pixelMatrix[4] + pixelMatrix[5]
+        const pex = ex * pixelMatrix[0] + ey * pixelMatrix[1] + pixelMatrix[2]
+        const pey = ex * pixelMatrix[3] + ey * pixelMatrix[4] + pixelMatrix[5]
+
+        parts.push(`M${psx.toFixed(1)} ${psy.toFixed(1)}L${pex.toFixed(1)} ${pey.toFixed(1)}`)
+        count++
       }
+      if (count >= MAX_SEGMENTS) break
     }
-  }
+
+    return parts.join("")
+  }, [wxMin, wxMax, wyMin, wyMax, step, segLen, ode, pixelMatrix])
 
   // Solution curves via numerical integration
   const solutionPaths = React.useMemo(() => {
     if (!solutions || solutions.length === 0) return []
 
+    // Viewport-relative clamp: solutions shouldn't extend beyond
+    // a generous multiple of the visible area
+    const yClamp = ySpan * 10
+    const yClampMin = wyMin - yClamp
+    const yClampMax = wyMax + yClamp
+
     return solutions.map((sol) => {
       const [x0, y0] = sol.initialCondition
 
-      // Determine integration domain
-      let domMin = -10
-      let domMax = 10
+      // Determine integration domain from the visible viewport
+      let domMin: number
+      let domMax: number
       if (sol.domain) {
         domMin = sol.domain[0]
         domMax = sol.domain[1]
       } else {
-        for (const [xMin, xMax] of xPanes) {
-          domMin = Math.min(domMin, xMin)
-          domMax = Math.max(domMax, xMax)
-        }
+        domMin = wxMin - xSpan * 0.5
+        domMax = wxMax + xSpan * 0.5
       }
 
-      // Adapt integration step to zoom: finer when zoomed in
-      const h = integrationStep === 0.02 ? Math.min(0.02, step / 25) : integrationStep
+      // Adapt integration step to viewport: roughly 500 steps per screen width
+      let h: number
+      if (integrationStepProp === "auto") {
+        h = Math.max(xSpan / 500, (domMax - domMin) / MAX_SOLUTION_POINTS)
+      } else {
+        h = integrationStepProp
+      }
+
       const points: vec.Vector2[] = [[x0, y0]]
 
       // Integrate forward
       let x = x0
       let y = y0
-      while (x < domMax) {
+      let fwdCount = 0
+      while (x < domMax && fwdCount < MAX_SOLUTION_POINTS / 2) {
         if (integrationMethod === "rk4") {
           const k1 = h * ode(x, y)
           const k2 = h * ode(x + h / 2, y + k1 / 2)
@@ -140,15 +170,17 @@ export function SlopeField({
           y = y + h * ode(x, y)
         }
         x += h
-        if (!isFinite(y) || Math.abs(y) > 100) break
+        if (!isFinite(y) || y < yClampMin || y > yClampMax) break
         points.push([x, y])
+        fwdCount++
       }
 
       // Integrate backward
       x = x0
       y = y0
       const backPoints: vec.Vector2[] = []
-      while (x > domMin) {
+      let bwdCount = 0
+      while (x > domMin && bwdCount < MAX_SOLUTION_POINTS / 2) {
         if (integrationMethod === "rk4") {
           const k1 = -h * ode(x, y)
           const k2 = -h * ode(x - h / 2, y + k1 / 2)
@@ -159,8 +191,9 @@ export function SlopeField({
           y = y - h * ode(x, y)
         }
         x -= h
-        if (!isFinite(y) || Math.abs(y) > 100) break
+        if (!isFinite(y) || y < yClampMin || y > yClampMax) break
         backPoints.unshift([x, y])
+        bwdCount++
       }
 
       return {
@@ -170,7 +203,7 @@ export function SlopeField({
         style: sol.style ?? "solid",
       }
     })
-  }, [solutions, ode, integrationMethod, integrationStep, xPanes])
+  }, [solutions, ode, integrationMethod, integrationStepProp, wxMin, wxMax, wyMin, wyMax, xSpan, ySpan])
 
   return (
     <g>

@@ -51,6 +51,7 @@ export default function WaveInterference() {
         {amp1.element}
         {amp2.element}
         {debug && <Debug.ViewportInfo />}
+        {debug && <Debug.FpsCounter />}
       </Mafs>
 
       <div className="p-4 border-gray-700 border-t bg-black text-white flex items-center gap-4">
