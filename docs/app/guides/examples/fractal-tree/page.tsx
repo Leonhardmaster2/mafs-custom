@@ -20,8 +20,8 @@ export default function Page() {
 
       <h2>Performance optimizations</h2>
       <ul>
-        <li><strong>Hard branch cap</strong> — maximum 4,000 branches per frame, regardless of zoom</li>
-        <li><strong>Pixel-size culling</strong> — branches smaller than 3px are not rendered or recursed into</li>
+        <li><strong>Hard branch cap</strong> — maximum 12,000 branches per frame, regardless of zoom</li>
+        <li><strong>Pixel-size culling</strong> — sub-pixel branches are not rendered or recursed into</li>
         <li><strong>Viewport culling</strong> — entire subtrees outside the visible area are skipped using geometric-series bounding boxes</li>
         <li><strong>No pre-generation</strong> — branches are computed lazily during render, only for the visible region at the current zoom</li>
         <li><strong>Path batching</strong> — one SVG <code>&lt;path&gt;</code> per depth level instead of one per branch</li>

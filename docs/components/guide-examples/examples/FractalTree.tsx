@@ -15,15 +15,15 @@ import {
 
 /**
  * Hard cap on total rendered branches per frame.
- * This guarantees bounded render time regardless of zoom level.
+ * 12k is enough for a lush tree while staying smooth on modern hardware.
  */
-const MAX_BRANCHES = 4000
+const MAX_BRANCHES = 12000
 
 /** Hard cap on recursion depth (safety net — pixel culling stops earlier) */
 const ABS_MAX_DEPTH = 30
 
-/** Minimum pixel length to render a branch. Below this it's sub-pixel and invisible. */
-const MIN_PX_LENGTH = 3
+/** Minimum pixel length to render a branch. At 1px branches are just barely visible. */
+const MIN_PX_LENGTH = 1
 
 function FractalTreeInner({ debug }: { debug: boolean }) {
   const trunkLength = 2.0
