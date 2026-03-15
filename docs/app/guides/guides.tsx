@@ -138,6 +138,7 @@ export const Guides: Section[] = [
       { title: "Projectile motion", slug: "projectile-motion" },
       { separator: true },
       { title: "Linear transform", slug: "linear-transform" },
+      { title: "Vector field", slug: "vector-field" },
       { title: "Wave interference", slug: "wave-interference" },
       { title: "Fractal tree", slug: "fractal-tree" },
       { title: "Fourier epicycles", slug: "fourier-epicycles" },

@@ -86,23 +86,47 @@ export function sampleParametric(
   threshold: number,
 ) {
   let result = ""
-  let lastWasFinite = false
+  let needsMove = true
+  let prevX = NaN
+  let prevY = NaN
+
+  // Discontinuity threshold: if the squared distance between consecutive
+  // points exceeds this, treat it as a discontinuity and break the path.
+  // This prevents the "vertical line through infinity" artifact on functions
+  // like 1/(x-2) where the value jumps from +huge to -huge.
+  const discontinuityThreshold = 1e6 * threshold
 
   sample({
     fn,
     error: (a, b) => vec.squareDist(a, b),
     onPoint: (_t, [x, y]) => {
       if (Number.isFinite(x) && Number.isFinite(y)) {
-        // If the previous point was non-finite (or this is the first point),
-        // start a new sub-path with M instead of continuing with L
-        if (!lastWasFinite) {
+        if (needsMove) {
           result += `M ${x} ${y} L `
+          needsMove = false
         } else {
-          result += `${x} ${y} L `
+          // Check for discontinuity: huge jump between consecutive points
+          const dx = x - prevX
+          const dy = y - prevY
+          if (dx * dx + dy * dy > discontinuityThreshold) {
+            // Break the path — end current segment, start new one
+            // Remove trailing " L " from current segment
+            if (result.endsWith("L ")) {
+              result = result.substring(0, result.length - 2)
+            }
+            result += `M ${x} ${y} L `
+          } else {
+            result += `${x} ${y} L `
+          }
         }
-        lastWasFinite = true
+        prevX = x
+        prevY = y
       } else {
-        lastWasFinite = false
+        needsMove = true
+        // Remove trailing " L " from current segment
+        if (result.endsWith("L ")) {
+          result = result.substring(0, result.length - 2)
+        }
       }
     },
     lerp: (p1, p2, t) => vec.lerp(p1, p2, t),

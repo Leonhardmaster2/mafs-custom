@@ -33,7 +33,7 @@ export default function ProbabilityTreeExample() {
 
   return (
     <div style={{ position: "relative" }}>
-      <Mafs height={400} viewBox={{ x: [-2, 8], y: [-3, 3] }} pan={false}>
+      <Mafs height={400} viewBox={{ x: [-2, 8], y: [-3, 3] }} pan>
         <ProbabilityTree
           data={treeData}
           x={0}

@@ -75,7 +75,7 @@ export default function ProbabilityTreeLargeExample() {
 
   return (
     <div style={{ position: "relative" }}>
-      <Mafs height={500} viewBox={{ x: [-3, 10], y: [-5, 5] }} pan={false}>
+      <Mafs height={500} viewBox={{ x: [-3, 10], y: [-5, 5] }} pan>
         <ProbabilityTree
           data={treeData}
           x={-1}

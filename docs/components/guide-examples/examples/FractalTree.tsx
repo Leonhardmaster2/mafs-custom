@@ -36,8 +36,15 @@ function FractalTreeInner({ debug }: { debug: boolean }) {
   const combinedTransform = vec.matrixMult(viewTransform, userTransform)
 
   const { xPaneRange, yPaneRange } = usePaneContext()
-  const [wxMin, wxMax] = xPaneRange
-  const [wyMin, wyMax] = yPaneRange
+  // Add very generous padding (100% of pane range on each side) so branches
+  // near viewport edges are never culled prematurely.
+  const paneW = xPaneRange[1] - xPaneRange[0]
+  const paneH = yPaneRange[1] - yPaneRange[0]
+  const pad = Math.max(paneW, paneH)
+  const wxMin = xPaneRange[0] - pad
+  const wxMax = xPaneRange[1] + pad
+  const wyMin = yPaneRange[0] - pad
+  const wyMax = yPaneRange[1] + pad
 
   // Scale factor for quick pixel-length estimate
   const pxPerUnit = Math.max(Math.abs(combinedTransform[0]), Math.abs(combinedTransform[4]))
@@ -159,8 +166,8 @@ function FractalTreeInner({ debug }: { debug: boolean }) {
       {debug && (
         <g className="mafs-shadow" fontFamily="monospace" fontSize={12}>
           <text
-            x={vec.transform([wxMin, wyMax], combinedTransform)[0] + 10}
-            y={vec.transform([wxMin, wyMax], combinedTransform)[1] + 20}
+            x={vec.transform([xPaneRange[0], yPaneRange[1]], combinedTransform)[0] + 10}
+            y={vec.transform([xPaneRange[0], yPaneRange[1]], combinedTransform)[1] + 20}
             fill="var(--mafs-fg)"
           >
             branches: {depthPaths.totalBranches}/{MAX_BRANCHES} | depth: {depthPaths.maxDepth}

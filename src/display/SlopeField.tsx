@@ -1,13 +1,14 @@
 import * as React from "react"
 import { useTransformContext } from "../context/TransformContext"
-import { usePaneContext } from "../context/PaneContext"
-import { useSpanContext } from "../context/SpanContext"
+import { useCoordinateContext } from "../context/CoordinateContext"
 import { roundToNearestPowerOf10, pickClosestToValue } from "../math"
 import { Theme } from "./Theme"
 import { vec } from "../vec"
 
 const MAX_SEGMENTS = 8000
-const MAX_SOLUTION_POINTS = 10000
+const MAX_SOLUTION_POINTS = 20000
+// Target segment length in pixels — segments always appear this size on screen
+const TARGET_PX_LENGTH = 25
 
 export interface SolutionCurveConfig {
   /** Initial condition [x0, y0] */
@@ -59,16 +60,21 @@ export function SlopeField({
   integrationStep: integrationStepProp = "auto",
 }: SlopeFieldProps) {
   const { viewTransform: pixelMatrix } = useTransformContext()
-  const { xPaneRange, yPaneRange } = usePaneContext()
-  const { xSpan, ySpan } = useSpanContext()
+  const coords = useCoordinateContext()
 
-  const [wxMin, wxMax] = xPaneRange
-  const [wyMin, wyMax] = yPaneRange
+  // Use actual visible coordinate bounds consistently for both grid spacing
+  // and grid bounds — prevents mismatch between step size and covered area.
+  const viewXMin = coords.xMin
+  const viewXMax = coords.xMax
+  const viewYMin = coords.yMin
+  const viewYMax = coords.yMax
+  const viewWidth = viewXMax - viewXMin
 
-  // Auto-compute step from viewport span so the field adapts to zoom level.
+  // Auto-compute step from the ACTUAL visible width (not xSpan from SpanContext)
+  // to always get ~20 segments across the viewport regardless of zoom.
   let step: number
   if (stepProp === "auto") {
-    const idealStep = xSpan / 20
+    const idealStep = viewWidth / 20
     const pow10 = roundToNearestPowerOf10(idealStep)
     const candidates = [pow10 * 1, pow10 * 2, pow10 * 5]
     const [closest] = pickClosestToValue(idealStep, candidates)
@@ -77,18 +83,39 @@ export function SlopeField({
     step = stepProp
   }
 
-  const segLen = segmentLength ?? step * 0.8
+  // Pixel scale factors from the view transform matrix
+  const pxPerUnitX = Math.abs(pixelMatrix[0])
+  const pxPerUnitY = Math.abs(pixelMatrix[4])
 
-  // Build the slope field as a single batched path over the full visible range.
-  // Uses xPaneRange/yPaneRange (continuous bounds) instead of iterating discrete panes.
+  // Grid bounds: extend slightly beyond visible area so edges aren't bare
+  const gridXMin = viewXMin - step * 2
+  const gridXMax = viewXMax + step * 2
+  const gridYMin = viewYMin - step * 2
+  const gridYMax = viewYMax + step * 2
+
+  // Build the slope field as a single batched path in PIXEL-SPACE coordinates.
+  // Each segment has a fixed pixel length (TARGET_PX_LENGTH) regardless of zoom,
+  // ensuring consistent visual appearance at all zoom levels. The ODE is evaluated
+  // at world-space grid points, then the direction vector is projected to pixel
+  // space and normalized to the target pixel length.
   const fieldD = React.useMemo(() => {
     const parts: string[] = []
     let count = 0
 
-    const xStart = Math.floor(wxMin / step) * step
-    const xEnd = Math.ceil(wxMax / step) * step
-    const yStart = Math.floor(wyMin / step) * step
-    const yEnd = Math.ceil(wyMax / step) * step
+    // segLen override: if user provided segmentLength, convert to pixel length
+    const pxLen = segmentLength
+      ? segmentLength * Math.max(pxPerUnitX, pxPerUnitY)
+      : TARGET_PX_LENGTH
+    const halfPx = pxLen / 2
+
+    const xStart = Math.floor(gridXMin / step) * step
+    const xEnd = Math.ceil(gridXMax / step) * step
+    const yStart = Math.floor(gridYMin / step) * step
+    const yEnd = Math.ceil(gridYMax / step) * step
+
+    // Pixel-space offset for the view transform translation
+    const tx = pixelMatrix[2]
+    const ty = pixelMatrix[5]
 
     for (let x = xStart; x <= xEnd; x += step) {
       for (let y = yStart; y <= yEnd; y += step) {
@@ -96,70 +123,81 @@ export function SlopeField({
         const m = ode(x, y)
         if (!isFinite(m)) continue
 
-        // Direction vector [1, m], normalized, scaled to segLen/2
-        const mag = Math.sqrt(1 + m * m)
-        const dx = (segLen / 2) * (1 / mag)
-        const dy = (segLen / 2) * (m / mag)
+        // Center of this segment in pixel space
+        const cx = x * pixelMatrix[0] + tx
+        const cy = y * pixelMatrix[4] + ty
 
-        const sx = x - dx
-        const sy = y - dy
-        const ex = x + dx
-        const ey = y + dy
+        // Direction vector in pixel space: world [1, m] → pixel [pxPerUnitX, m * pxPerUnitY]
+        // (pxPerUnitY is negative because y-axis is flipped, but we use the absolute value
+        //  and negate later since SVG y grows downward)
+        const pdx = pxPerUnitX
+        const pdy = -m * pxPerUnitY  // negative: world-up = screen-down
+        const pmag = Math.sqrt(pdx * pdx + pdy * pdy)
 
-        // Inline transform to pixel space
-        const psx = sx * pixelMatrix[0] + sy * pixelMatrix[1] + pixelMatrix[2]
-        const psy = sx * pixelMatrix[3] + sy * pixelMatrix[4] + pixelMatrix[5]
-        const pex = ex * pixelMatrix[0] + ey * pixelMatrix[1] + pixelMatrix[2]
-        const pey = ex * pixelMatrix[3] + ey * pixelMatrix[4] + pixelMatrix[5]
+        // Normalize to target pixel length
+        const ndx = (pdx / pmag) * halfPx
+        const ndy = (pdy / pmag) * halfPx
 
-        parts.push(`M${psx.toFixed(1)} ${psy.toFixed(1)}L${pex.toFixed(1)} ${pey.toFixed(1)}`)
+        const sx = cx - ndx
+        const sy = cy - ndy
+        const ex = cx + ndx
+        const ey = cy + ndy
+
+        parts.push(`M${sx.toFixed(1)} ${sy.toFixed(1)}L${ex.toFixed(1)} ${ey.toFixed(1)}`)
         count++
       }
       if (count >= MAX_SEGMENTS) break
     }
 
     return parts.join("")
-  }, [wxMin, wxMax, wyMin, wyMax, step, segLen, ode, pixelMatrix])
+  }, [gridXMin, gridXMax, gridYMin, gridYMax, step, segmentLength, ode, pixelMatrix, pxPerUnitX, pxPerUnitY])
 
-  // Solution curves via numerical integration
+  // Solution curves via numerical integration.
+  //
+  // CRITICAL: The integration must be completely independent of the viewport.
+  // The curve is integrated ONCE from the exact world-space initial condition
+  // with a FIXED step size and FIXED domain. Only the initial condition, ODE,
+  // and integration method trigger recomputation — never zoom/pan.
+  //
+  // This prevents trajectory divergence: for unstable ODEs like dy/dx = x - y,
+  // even tiny changes in step size h produce wildly different curves. If we
+  // recomputed on every zoom change, the user would see the curve "fan out"
+  // into multiple diverging lines.
+  //
+  // The polyline is in world-space and rendered via CSS transform, so
+  // zoom/pan only affects projection — the integration result is stable.
   const solutionPaths = React.useMemo(() => {
     if (!solutions || solutions.length === 0) return []
-
-    // Viewport-relative clamp: solutions shouldn't extend beyond
-    // a generous multiple of the visible area
-    const yClamp = ySpan * 10
-    const yClampMin = wyMin - yClamp
-    const yClampMax = wyMax + yClamp
 
     return solutions.map((sol) => {
       const [x0, y0] = sol.initialCondition
 
-      // Determine integration domain from the visible viewport
-      let domMin: number
-      let domMax: number
-      if (sol.domain) {
-        domMin = sol.domain[0]
-        domMax = sol.domain[1]
-      } else {
-        domMin = wxMin - xSpan * 0.5
-        domMax = wxMax + xSpan * 0.5
-      }
+      // Fixed integration domain — large enough to cover any reasonable zoom.
+      // Default ±10000 covers zooming out to very wide ranges.
+      // These are CONSTANTS, not derived from the viewport.
+      const domMin = sol.domain ? sol.domain[0] : -10000
+      const domMax = sol.domain ? sol.domain[1] : 10000
+      const domainWidth = domMax - domMin
 
-      // Adapt integration step to viewport: roughly 500 steps per screen width
-      let h: number
-      if (integrationStepProp === "auto") {
-        h = Math.max(xSpan / 500, (domMax - domMin) / MAX_SOLUTION_POINTS)
-      } else {
-        h = integrationStepProp
-      }
+      // Fixed step size — deterministic, never changes with zoom.
+      // For "auto", we compute h to produce exactly MAX_SOLUTION_POINTS/2
+      // steps across the domain, giving ~10000 points in each direction.
+      // This gives h ≈ 2.0 for ±10000 domain (20000 / 10000 = 2.0),
+      // which is coarse but produces a smooth enough polyline at that scale.
+      const maxSteps = MAX_SOLUTION_POINTS / 2
+      const h = integrationStepProp === "auto"
+        ? domainWidth / (maxSteps * 2)
+        : integrationStepProp
 
+      // Fixed y-clamp — stop if curve escapes to absurd values
+      const yClampAbs = 1e8
       const points: vec.Vector2[] = [[x0, y0]]
 
       // Integrate forward
       let x = x0
       let y = y0
       let fwdCount = 0
-      while (x < domMax && fwdCount < MAX_SOLUTION_POINTS / 2) {
+      while (x < domMax && fwdCount < maxSteps) {
         if (integrationMethod === "rk4") {
           const k1 = h * ode(x, y)
           const k2 = h * ode(x + h / 2, y + k1 / 2)
@@ -170,7 +208,7 @@ export function SlopeField({
           y = y + h * ode(x, y)
         }
         x += h
-        if (!isFinite(y) || y < yClampMin || y > yClampMax) break
+        if (!isFinite(y) || Math.abs(y) > yClampAbs) break
         points.push([x, y])
         fwdCount++
       }
@@ -180,7 +218,7 @@ export function SlopeField({
       y = y0
       const backPoints: vec.Vector2[] = []
       let bwdCount = 0
-      while (x > domMin && bwdCount < MAX_SOLUTION_POINTS / 2) {
+      while (x > domMin && bwdCount < maxSteps) {
         if (integrationMethod === "rk4") {
           const k1 = -h * ode(x, y)
           const k2 = -h * ode(x - h / 2, y + k1 / 2)
@@ -191,7 +229,7 @@ export function SlopeField({
           y = y - h * ode(x, y)
         }
         x -= h
-        if (!isFinite(y) || y < yClampMin || y > yClampMax) break
+        if (!isFinite(y) || Math.abs(y) > yClampAbs) break
         backPoints.unshift([x, y])
         bwdCount++
       }
@@ -203,11 +241,13 @@ export function SlopeField({
         style: sol.style ?? "solid",
       }
     })
-  }, [solutions, ode, integrationMethod, integrationStepProp, wxMin, wxMax, wyMin, wyMax, xSpan, ySpan])
+    // ONLY recompute when the actual integration inputs change.
+    // Viewport changes (zoom/pan) must NEVER appear in this dependency list.
+  }, [solutions, ode, integrationMethod, integrationStepProp])
 
   return (
     <g>
-      {/* Slope field */}
+      {/* Slope field — pixel-space path with fixed visual size */}
       <path
         d={fieldD}
         stroke={color}
@@ -218,13 +258,12 @@ export function SlopeField({
         style={{ vectorEffect: "non-scaling-stroke" }}
       />
 
-      {/* Solution curves */}
+      {/* Solution curves — rendered as world-space polylines transformed via CSS */}
       {solutionPaths.map((sol, i) => {
         if (sol.points.length < 2) return null
-        const pxPts = sol.points.map((p) => vec.transform(p, pixelMatrix))
         const d =
-          `M ${pxPts[0][0]},${pxPts[0][1]}` +
-          pxPts.slice(1).map((p) => ` L ${p[0]},${p[1]}`).join("")
+          `M ${sol.points[0][0]},${sol.points[0][1]}` +
+          sol.points.slice(1).map((p) => ` L ${p[0]},${p[1]}`).join("")
 
         return (
           <path
@@ -237,6 +276,7 @@ export function SlopeField({
             strokeLinejoin="round"
             style={{
               vectorEffect: "non-scaling-stroke",
+              transform: "var(--mafs-view-transform)",
               strokeDasharray:
                 sol.style === "dashed" ? "var(--mafs-line-stroke-dash-style)" : undefined,
             }}
